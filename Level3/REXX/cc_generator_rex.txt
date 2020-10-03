@@ -1,0 +1,45 @@
+/* REXX */
+i = 1
+cc_string = ""
+do while (i <= 500)
+    cc_digit = 1
+    do while(cc_digit <= 15)
+        digit = random(0,9)
+        cc_string = cc_string||digit
+        cc_digit = cc_digit + 1
+    end
+    CALL GET_CHECK_DIGIT
+    cc_string = cc_string||final_digit
+    say cc_string 
+    cc_string = ""
+    i = i + 1
+end
+exit
+
+GET_CHECK_DIGIT:
+        cr_dg = cc_string
+        position = 15
+        checksum = 0
+        do while (position > 0)
+          remainder = position // 2
+          if (remainder \= 0) then
+            do
+                digit = substr(cr_dg,position,1)
+                digit = digit * 2
+                if (digit > 9 ) then
+                    digit = digit - 9
+                checksum = checksum + digit
+            end
+          else
+            do
+                digit = substr(cr_dg,position,1)
+                checksum = checksum + digit
+            end
+           position = position - 1
+        end
+        integer_remainder = checksum // 10
+        if (integer_remainder == 0) then
+        final_digit = 0
+        else
+        final_digit = 10 - integer_remainder
+RETURN 

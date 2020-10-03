@@ -1,0 +1,19 @@
+
+// create a tso profile
+
+zowe profiles create tso-profile chk-mtm-2020 -a fb3
+
+// run a tso command
+
+zowe tso issue command "exec 'Z00391.source(somerexx)'" --ssm
+Eg : zowe tso issue command "exec 'Z00391.SOURCE(CCVIEW)'" --ssm
+
+// Start an address space with the following command:  address space persistent 
+zowe tso start as
+// OUTPUT : TSO address space began successfully, key is: Z00391-497-aahiaaaf
+
+// Run prev cmd in ur addr space
+zowe tso send as Z00391-497-aahiaaaf --data "exec 'z00391.source(somerexx)'"
+
+// stop address space
+zowe tso stop as Z00391-497-aahiaaaf

@@ -1,0 +1,18 @@
+//PRINT2   JOB  PRNTREC
+//STEP1    EXEC PGM=IDCAMS
+//VSDSET2  DD   DSNAME=Z00391.ESVSAMDS,DISP=OLD
+//SYSPRINT DD   SYSOUT=A
+//SYSIN    DD   *
+     REPRO -
+           INDATASET(MTM2020.PUBLIC.RECORDS) -
+           OUTFILE(VSDSET2) -
+           COUNT(20)
+     IF LASTCC = 0 -
+           THEN -
+           PRINT -
+                 INFILE(VSDSET2) -
+                 CHARACTER
+       PRINT -
+           INDATASET(MTM2020.PUBLIC.RECORDS) -
+           COUNT(20) -
+           HEX

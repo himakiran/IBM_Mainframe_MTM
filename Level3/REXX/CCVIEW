@@ -1,0 +1,118 @@
+/**************************** REXX *********************************/
+/* This exec illustrates the use of "EXECIO 0 ..." to open, empty, */
+/* or close a file. It reads records from file indd, allocated     */
+/* to 'sams.input.dataset', and writes selected records to file    */
+/* outdd, allocated to 'sams.output.dataset'. In this example, the */
+/* data set 'smas.input.dataset' contains variable-length records  */
+/* (RECFM = VB).                                                   */
+/*******************************************************************/
+"FREE FI(outdd)"
+"FREE FI(indd)"
+"ALLOC FI(indd) DA('Z00391.INPUT(TESTCC)') SHR REUSE"
+"ALLOC FI(outdd) DA('Z00391.OUTPUT.CUSTOMER') SHR REUSE"
+eofflag = 2                 /* Return code to indicate end-of-file */
+return_code = 0                /* Initialize return code           */
+in_ctr = 0                     /* Initialize # of lines read       */
+out_ctr = 0                    /* Initialize # of lines written    */
+
+/*******************************************************************/
+/* Open the indd file, but do not read any records yet.  All       */
+/* records will be read and processed within the loop body.        */
+/*******************************************************************/
+
+"EXECIO 0 DISKR indd (OPEN"   /* Open indd                         */
+
+/*******************************************************************/
+/* Now read all lines from indd, starting at line 1, and copy      */
+/* selected lines to outdd.                                        */
+/*******************************************************************/
+
+DO WHILE (return_code \= eofflag) /* Loop while not end-of-file   */
+  'EXECIO 1 DISKR indd'           /* Read 1 line to the data stack */
+  return_code = rc                /* Save execio rc                */
+  IF return_code = 0 THEN         /* Get a line ok?                */
+   DO                             /* Yes                           */
+      in_ctr = in_ctr + 1         /* Increment input line ctr      */
+      PARSE PULL line.1           /* Pull line just read from stack*/
+      IF LENGTH(line.1) > 10 then /* If line longer than 10 chars  */
+       DO
+         "EXECIO 1 DISKW outdd (STEM line." /* Write it to outdd   */
+         cc_digits = SUBSTR(line.1,6,16)
+         CALL INSPECT 
+         if (answer == 0) then
+           say "credit card " cc_digits "is valid"
+         else
+           say " credit card " cc_digits "is invalid"
+         out_ctr = out_ctr + 1        /* Increment output line ctr */
+       END
+   END
+END
+"EXECIO 0 DISKR indd (FINIS"   /* Close the input file, indd   */
+IF out_ctr > 0 THEN             /* Were any lines written to outdd?*/
+  DO                               /* Yes.  So outdd is now open   */
+     /****************************************************************/
+   /* Since the outdd file is already open at this point, the      */
+   /* following "EXECIO 0 DISKW ..." command will close the file,  */
+   /* but will not empty it of the lines that have already been    */
+   /* written. The data set allocated to outdd will contain out_ctr*/
+   /* lines.                                                       */
+   /****************************************************************/
+
+  "EXECIO 0 DISKW outdd (FINIS" /* Closes the open file, outdd     */
+  SAY 'File outdd now contains ' out_ctr' lines.'
+END
+ELSE                         /* Else no new lines have been        */
+                             /* written to file outdd              */
+  DO                         /* Erase any old records from the file*/
+
+   /****************************************************************/
+   /* Since the outdd file is still closed at this point, the      */
+   /* following "EXECIO 0 DISKW " command will open the file,   */
+   /* write 0 records, and then close it.  This will effectively   */
+   /* empty the data set allocated to outdd.  Any old records that */
+   /* were in this data set when this exec started will now be     */
+   /* deleted.                                                     */
+   /****************************************************************/
+
+   "EXECIO 0 DISKW outdd (OPEN FINIS"  /*Empty the outdd file      */
+   SAY 'File outdd is now empty.'
+   END
+"FREE FI(indd)"
+"FREE FI(outdd)"
+EXIT
+
+INSPECT:
+        cr_dg = cc_digits
+        say "crd_dg is " cr_dg
+        position = 15
+        checksum = 0
+        do while (position > 0)
+          say "position is " position
+          remainder = position // 2
+          say "remainder is " remainder
+          if (remainder \= 0) then
+            do
+            digit = substr(cr_dg,position,1)
+            say "digit is " digit
+            digit = digit * 2
+            if (digit > 9 ) then
+              digit = digit - 9
+            say " digit again is " digit
+            checksum = checksum + digit
+            say " checksum is " checksum
+            end
+          else
+            do
+            digit = substr(cr_dg,position,1)
+            say "digit is " digit
+            checksum = checksum + digit
+            say " checksum is " checksum
+            end
+        position = position - 1
+        end
+        checksum = checksum + (substr(cr_dg,16,1)) 
+        say " checksum is " checksum
+        answer = checksum // 10
+        say answer
+
+RETURN 

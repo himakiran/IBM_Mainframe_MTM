@@ -1,0 +1,36 @@
+/* REXX */
+say "I'm thinking of a number between 1 and 10."
+secret = 7
+tries = 1
+
+do while (guess \= secret)
+    say "What is your guess?"
+    pull guess
+    select
+        when  (guess == 0)  then say "Hmmm.. 0 doesn't fall in 1-10 !!"
+        when  (guess > 10) then say guess "is greater than 10 !!!"
+        when  (DATATYPE(guess,'W') == 0) then 
+        do
+            if (DATATYPE(guess,'M') == 1) then
+            say guess "is not a number !!!" ""
+            else
+                do
+                if (DATATYPE(guess,'N') == 1) then
+                say guess "is not a integer !!!" ""
+                end
+        end
+        otherwise
+            say "That's not it. Try again"   
+    end
+    
+    tries = tries + 1
+    say "Do you want to quit ?? yes/no"
+    pull answer
+    result = (answer /== yes) 
+    if (result) then
+    nop
+    else
+    exit
+end
+say "You got it! And it only took you" tries "tries!"
+exit

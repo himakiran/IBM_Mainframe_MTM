@@ -1,0 +1,17 @@
+// create a ps(physical sequential) dataset ..similar to file in unix
+zowe zos-files cre ps z00391.abc.xyz
+// create a pds(partitioned data set) dataset .. similar to directory in unix
+zowe zos-files cre pds z00391.abc.def
+
+//Create a a VSAM data set called ZXXXXX.VSAMDS on the VPWRKC volume
+zowe zos-files create vsam  Z00391.VSAMDS -v VPWRKC
+nano repro.txt
+zowe jobs submit lf "repro.txt" 
+
+// Create an entry sequenced VSAM Cluster on Volume VPWRKC
+zowe zos-files create vsam --data-set-organization NONINDEXED Z00391.ESVSAMDS -v VPWRKC
+// create a sequential dataset
+zowe zos-files create ps Z00391.OUTPUT.VSAMPRNT 
+
+// Link to understand repro2.txt
+https://www.ibm.com/support/knowledgecenter/en/SSLTBW_2.1.0/com.ibm.zos.v2r1.idat300/dat3gu_Define_a_key-sequenced_cluster_and_an_entry-sequenced_cluster__Example_4.htm
